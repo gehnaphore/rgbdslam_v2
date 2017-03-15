@@ -63,9 +63,9 @@ tf::StampedTransform GraphManager::computeFixedToBaseTransform(Node* node, bool 
 
     tf::Transform computed_motion = eigenTransf2TF(v->estimate());//get pose of point cloud w.r.t. first frame's pc
     tf::Transform base2points = node->getBase2PointsTransform();//get pose of base w.r.t current pc at capture time
-    printTransform("base2points", base2points);
-    printTransform("computed_motion", computed_motion);
-    printTransform("init_base_pose_", init_base_pose_);
+    //errPrintTransform("base2points", base2points);
+    //errPrintTransform("computed_motion", computed_motion);
+    //errPrintTransform("init_base_pose_", init_base_pose_);
 
     tf::Transform world2base = init_base_pose_*base2points*computed_motion*base2points.inverse();
     tf::Transform gt_world2base = node->getGroundTruthTransform();//get mocap pose of base in map
@@ -73,9 +73,9 @@ tf::StampedTransform GraphManager::computeFixedToBaseTransform(Node* node, bool 
 
     //makes sure things have a corresponding timestamp
     //also avoids problems with tflistener cache size if mapping took long. Must be synchronized with tf broadcasting
-    ros::Time now = ros::Time::now(); 
+    ros::Time now = ros::Time::now();
 
-    printTransform("World->Base", world2base);
+    //errPrintTransform("World->Base", world2base);
     std::string fixed_frame = ParameterServer::instance()->get<std::string>("fixed_frame_name");
     std::string base_frame  = ParameterServer::instance()->get<std::string>("base_frame_name");
     if(base_frame.empty())
@@ -232,6 +232,7 @@ bool GraphManager::updateCloudOrigin(Node* node)
     node->pc_col->sensor_origin_.head<3>() = v->estimate().translation().cast<float>();
     node->pc_col->sensor_orientation_ =  v->estimate().rotation().cast<float>();
     //node->header_.frame_id = ParameterServer::instance()->get<std::string>("fixed_frame_name");
+    return true;
 }
 
 void GraphManager::saveOctomap(QString filename, bool threaded){
@@ -287,7 +288,7 @@ void GraphManager::saveOctomapImpl(QString filename)
       Q_EMIT setGUIStatus(message.sprintf("Inserting Node %i/%i into octomap", ++counter, (int)nodes_for_octomapping.size()));
       this->renderToOctomap(node);
       rendered_points += node->pc_col->size();
-      ROS_INFO("Rendered %u points of %u", rendered_points, points_to_render);
+      ROS_ERROR("Rendered %u points of %u", rendered_points, points_to_render);
       Q_EMIT progress(1, "Saving Octomap", counter);
       if(counter % ParameterServer::instance()->get<int>("octomap_autosave_step") == 0){
         Q_EMIT setGUIStatus(QString("Autosaving preliminary octomap to ") + filename);
@@ -299,7 +300,7 @@ void GraphManager::saveOctomapImpl(QString filename)
   Q_EMIT setGUIStatus(QString("Saving final octomap to ") + filename);
   co_server_.save(qPrintable(filename));
   Q_EMIT progress(1, "Finished Saving Octomap", 1e6);
-  ROS_INFO ("Saved Octomap to %s", qPrintable(filename));
+  ROS_ERROR ("Saved Octomap to %s", qPrintable(filename));
   if(ParameterServer::instance()->get<bool>("octomap_clear_after_save")){
     co_server_.reset();
     ROS_INFO ("Reset Octomap to free memory");
@@ -318,13 +319,13 @@ void GraphManager::writeOctomap(QString filename) const
 void GraphManager::renderToOctomap(Node* node)
 {
     ScopedTimer s(__FUNCTION__);
-    ROS_INFO("Rendering Node %i with frame %s", node->id_, node->header_.frame_id.c_str());
+    ROS_ERROR("Rendering Node %i with frame %s", node->id_, node->header_.frame_id.c_str());
     if(updateCloudOrigin(node)){//Only render if transformation estimate is valid
     co_server_.insertCloudCallback(node->pc_col, ParameterServer::instance()->get<double>("maximum_depth")); // Will be transformed according to sensor pose set previously
     }
     if(ParameterServer::instance()->get<bool>("octomap_clear_raycasted_clouds")){
       node->clearPointCloud();
-      ROS_INFO("Cleared pointcloud of Node %i", node->id_);
+        ROS_ERROR("Cleared pointcloud of Node %i", node->id_);
     }
 }
 void GraphManager::saveIndividualCloudsToFile(QString file_basename)
@@ -943,10 +944,16 @@ tf::StampedTransform GraphManager::stampedTransformInWorldFrame(const Node* node
     if(base_frame.empty()){ //if there is no base frame defined, use frame of sensor data
       base_frame = node->header_.frame_id;
     }
+
+    const tf::StampedTransform& odomToPoints = node->getOdomTransform();//get pose of base w.r.t current pc at capture time
+    const tf::StampedTransform& odomToBase = node->getOdom2BaseTransform();//get pose of base w.r.t current pc at capture time
     const tf::StampedTransform& base2points = node->getBase2PointsTransform();//get pose of base w.r.t current pc at capture time
 
-    tf::Transform world2base = init_base_pose_*base2points*computed_motion*base2points.inverse();
-    //printTransform("World->Base", world2base);
+    //errPrintTransform("computed_motion",computed_motion);
+    //errPrintTransform("base2points",base2points);
+
+    tf::Transform world2base = init_base_pose_*init_base2Points_*computed_motion*base2points.inverse();
+    //errPrintTransform("World->Base", world2base);
 
     return tf::StampedTransform(world2base.inverse(), base2points.stamp_, base_frame, fixed_frame);
 }

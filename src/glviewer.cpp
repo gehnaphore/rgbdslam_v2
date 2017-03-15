@@ -1198,6 +1198,8 @@ void GLViewer::drawToPS(QString filename){
 
 
 inline void GLViewer::clearAndUpdate(){
+    update();
+    /*
   ScopedTimer s(__FUNCTION__);
   makeCurrent();
   paintGL();
@@ -1205,7 +1207,7 @@ inline void GLViewer::clearAndUpdate(){
   {
     ScopedTimer s("SwapBuffers");
     swapBuffers();
-  }
+  }*/
 }
 
 ///From http://www.gamedev.net/topic/126624-generating-an-ellipsoid-in-opengl/

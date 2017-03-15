@@ -29,6 +29,11 @@ void overlay_edges(cv::Mat visual, cv::Mat depth, cv::Mat& visual_edges, cv::Mat
 void printTransform(const char* name, const tf::Transform t) ;
 ///Print tf::Transform via ROS_INFO
 void printTransform(const char* name, const tf::StampedTransform t) ;
+
+void errPrintTransform(const char* name, const tf::Transform t) ;
+///Print tf::Transform via ROS_INFO
+void errPrintTransform(const char* name, const tf::StampedTransform t) ;
+
 ///Write Transformation to textstream
 void logTransform(QTextStream& out, const tf::Transform& t, double timestamp, const char* label = NULL);
 void printQMatrix4x4(const char* name, const QMatrix4x4& m);

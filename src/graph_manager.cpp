@@ -93,6 +93,7 @@ GraphManager::GraphManager() :
                                                          ps->get<int>("publisher_queue_size"));
   computed_motion_ = tf::Transform::getIdentity();
   init_base_pose_  = tf::Transform::getIdentity();
+    init_base2Points_  = tf::Transform::getIdentity();
   std::string fixed_frame = ParameterServer::instance()->get<std::string>("fixed_frame_name");
   std::string base_frame  = ParameterServer::instance()->get<std::string>("base_frame_name");
     
@@ -365,6 +366,8 @@ void GraphManager::firstNode(Node* new_node)
     new_node->id_ = graph_.size();
     new_node->seq_id_ = next_seq_id++; // allways incremented, even if node is not added
     init_base_pose_ =  new_node->getGroundTruthTransform();//identity if no MoCap available
+    init_base2Points_ = new_node->getBase2PointsTransform();
+
     printTransform("Ground Truth Transform for First Node", init_base_pose_);
     //new_node->buildFlannIndex(); // create index so that next nodes can use it
     g2o::VertexSE3* reference_pose = new g2o::VertexSE3;
@@ -477,7 +480,7 @@ bool GraphManager::nodeComparisons(Node* new_node,
             tf::Transform previous = eigenTransf2TF(v->estimate());
             tf::Transform combined = previous*incremental;
             latest_transform_cache_ = stampedTransformInWorldFrame(new_node, combined);
-            printTransform("Computed new transform", latest_transform_cache_);
+            //errPrintTransform("Computed new transform", latest_transform_cache_);
             broadcastTransform(latest_transform_cache_);
             process_node_runs_ = false;
             curr_best_result_ = mr;
@@ -985,12 +988,12 @@ double GraphManager::optimizeGraphImpl(double break_criterion)
       }
       optimizer_->initializeOptimization(edges);
     }
-
+/*
     {
       ScopedTimer s2("Optimizer Initialization");
       optimizer_->initializeOptimization(cam_cam_edges_);
     }
-
+*/
     ROS_WARN_NAMED("eval", "Optimization with %zu cams, %zu nodes and %zu edges in the graph", graph_.size(), optimizer_->vertices().size(), optimizer_->edges().size());
     Q_EMIT iamBusy(1, "Optimizing Graph", 0); 
     int currentIt = 0;
@@ -1041,9 +1044,9 @@ double GraphManager::optimizeGraphImpl(double break_criterion)
   latest_transform_cache_ = stampedTransformInWorldFrame(newest_node, computed_motion_);
   //printTransform("Computed final transform", latest_transform_cache_);
   broadcastTransform(latest_transform_cache_);
-  if(ps->get<bool>("octomap_online_creation")) { 
-    if(updateCloudOrigin(newest_node)){
-      renderToOctomap(newest_node);
+  if(ps->get<bool>("octomap_online_creation")) {
+      if(updateCloudOrigin(newest_node)){
+          renderToOctomap(newest_node);
       //v->setFixed(true);
     }
   }

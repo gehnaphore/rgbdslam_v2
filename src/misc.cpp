@@ -87,6 +87,16 @@ void printTransform(const char* name, const tf::Transform t) {
     ROS_INFO_STREAM(name << ": Rotation " << t.getRotation().getX() << " " << t.getRotation().getY() << " " << t.getRotation().getZ() << " " << t.getRotation().getW());
 }
 
+void errPrintTransform(const char* name, const tf::StampedTransform t) {
+    ROS_ERROR_STREAM(name << ": Translation " << t.getOrigin().x() << " " << t.getOrigin().y() << " " << t.getOrigin().z());
+    ROS_ERROR_STREAM(name << ": Rotation " << t.getRotation().getX() << " " << t.getRotation().getY() << " " << t.getRotation().getZ() << " " << t.getRotation().getW());
+    ROS_ERROR_STREAM(name << ": From " << t.frame_id_ << " to " << t.child_frame_id_ << " at " << t.stamp_.sec << ":" << std::setfill('0') << std::setw(9) << t.stamp_.nsec);
+}
+void errPrintTransform(const char* name, const tf::Transform t) {
+    ROS_ERROR_STREAM(name << ": Translation " << t.getOrigin().x() << " " << t.getOrigin().y() << " " << t.getOrigin().z());
+    ROS_ERROR_STREAM(name << ": Rotation " << t.getRotation().getX() << " " << t.getRotation().getY() << " " << t.getRotation().getZ() << " " << t.getRotation().getW());
+}
+
 void logTransform(QTextStream& out, const tf::Transform& t, double timestamp, const char* label) {
     if(label) out << label << ": ";
     out << timestamp << " " << t.getOrigin().x() << " " << t.getOrigin().y() << " " << t.getOrigin().z() << " " << t.getRotation().getX() << " " << t.getRotation().getY() << " " << t.getRotation().getZ() << " " << t.getRotation().getW() << "\n";

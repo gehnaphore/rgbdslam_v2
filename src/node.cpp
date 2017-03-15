@@ -376,6 +376,9 @@ void Node::setOdomTransform(tf::StampedTransform gt){
     odom_transform_ = gt;
     odometry_set_=true;
 }
+void Node::setOdom2BaseTransform(tf::StampedTransform gt){
+  odom2base_transform_ = gt;
+}
 void Node::setGroundTruthTransform(tf::StampedTransform gt){
     ground_truth_transform_ = gt;
 }
@@ -384,6 +387,9 @@ void Node::setBase2PointsTransform(tf::StampedTransform& b2p){
 }
 tf::StampedTransform Node::getOdomTransform() const {
     return odom_transform_;
+}
+tf::StampedTransform Node::getOdom2BaseTransform() const {
+  return odom2base_transform_;
 }
 tf::StampedTransform Node::getGroundTruthTransform() const {
     return ground_truth_transform_;

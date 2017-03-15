@@ -100,14 +100,23 @@ void GraphManager::addOdometry(ros::Time timestamp,
         ok = listener->canTransform(odom_target_frame1, earlier_node->timestamp_, //frame and time of earlier node
                                     odom_target_frame2, later_node->timestamp_,   //frame and time of newer node
                                     odom_fixed_frame, &error_msg);
-        if(ok){
-          //from http://wiki.ros.org/tf/Tutorials/Time%20travel%20with%20tf%20%28C%2B%2B%29
-          //listener.lookupTransform("/turtle2", now, "/turtle1", past, "/world", transform);
-          listener->lookupTransform(odom_target_frame1, earlier_node->timestamp_, //frame and time of earlier node
-                                    odom_target_frame2, later_node->timestamp_,   //frame and time of newer node
-                                    odom_fixed_frame, deltaTransform);
+        if(ok) {
+            //from http://wiki.ros.org/tf/Tutorials/Time%20travel%20with%20tf%20%28C%2B%2B%29
+            //listener.lookupTransform("/turtle2", now, "/turtle1", past, "/world", transform);
+            listener->lookupTransform(odom_target_frame1, earlier_node->timestamp_, //frame and time of earlier node
+                                      odom_target_frame2, later_node->timestamp_,   //frame and time of newer node
+                                      odom_fixed_frame, deltaTransform);
 
-          printTransform("Odometry Delta", deltaTransform);
+            //errPrintTransform("Odometry Delta", deltaTransform);
+        } else {
+            tf::StampedTransform earlierXForm = earlier_node->getOdomTransform();
+            tf::StampedTransform laterXForm = later_node->getOdomTransform();
+            tf::Transform completeXform = earlierXForm * laterXForm.inverse();
+            errPrintTransform("Odometry Delta (cached)", completeXform);
+            deltaTransform.setData(completeXform);
+        }
+
+
           //ADD edge here
           LoadedEdge3D edge;
           createOdometryEdge(earlier_node->id_, later_node->id_, deltaTransform, edge);
@@ -115,11 +124,21 @@ void GraphManager::addOdometry(ros::Time timestamp,
           addOdometryEdgeToG2O(edge, earlier_node, later_node, motion_estimate);
           earlier_node->has_odometry_edge_=true;
     //      }
+/*
         } else {//couldn't transform
-          ROS_ERROR("Cannot transform between node %d (time %d.%09d) and %d (time %d.%09d). Stated reason: %s", 
+          ROS_ERROR("Cannot transform between node %d (time %d.%09d) and %d (time %d.%09d). Stated reason: '%s'",
                     earlier_node->id_, earlier_node->timestamp_.sec, earlier_node->timestamp_.nsec, later_node->id_, later_node->timestamp_.sec, later_node->timestamp_.nsec, error_msg.c_str());
+            ROS_ERROR("All frames:");
           ROS_ERROR_STREAM(listener->allFramesAsString());
+            ROS_ERROR("All frames earlier:");
+          ROS_ERROR_STREAM(listener->allFramesAsDot(earlier_node->timestamp_.toSec()));
+            ROS_ERROR("All frames later:");
+          ROS_ERROR_STREAM(listener->allFramesAsDot(later_node->timestamp_.toSec()));
+            ROS_ERROR("Caching:");
+            ROS_ERROR_STREAM(listener->getCacheLength());
+
         }
+*/
     } else {// Encountered node with odometry edge = true
         //ROS_DEBUG("Node already has odometry: %d", earlier_node->id_); 
       //break; //One could save the latest node before which all nodes have odometry, but running through the nodes is quick

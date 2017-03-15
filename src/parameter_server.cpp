@@ -94,7 +94,7 @@ void ParameterServer::defaultConfig() {
 
   // Frontend settings 
   addOption("max_translation_meter",         static_cast<double> (1e10),                "Sanity check for smooth motion.");
-  addOption("max_rotation_degree",           static_cast<double> (360),                    "Sanity check for smooth motion.");
+  addOption("max_rotation_degree",           static_cast<double> (360),                 "Sanity check for smooth motion.");
   addOption("min_translation_meter",         static_cast<double> (0.0),                 "Frames with motion less than this, will be omitted ");
   addOption("min_rotation_degree",           static_cast<double> (0.0),                 "Frames with motion less than this, will be omitted ");
   addOption("max_dist_for_inliers",          static_cast<double> (3),                   "Mahalanobis distance for matches to be considered inliers by ransac");

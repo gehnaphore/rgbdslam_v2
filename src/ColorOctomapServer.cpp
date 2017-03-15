@@ -42,13 +42,13 @@ bool ColorOctomapServer::save(const char* filename) const
   if (outfile.is_open()){
     //m_octoMap.writeConst(outfile); 
     if (ParameterServer::instance()->get<bool>("concurrent_io")) {
-      ROS_INFO("Waiting for rendering thread to finish");
+      ROS_ERROR("Waiting for rendering thread to finish");
       rendering.waitForFinished();
     }
-    ROS_INFO("Writing octomap to %s", filename);
+    ROS_ERROR("Writing octomap to %s", filename);
     m_octoMap.write(outfile); 
     outfile.close();
-    ROS_INFO("color tree written %s", filename);
+    ROS_ERROR("color tree written %s", filename);
     return true;
   }
   else {

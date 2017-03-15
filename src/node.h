@@ -87,12 +87,15 @@ public:
 
   ///Transform, e.g., from Joint/Wheel odometry
   void setOdomTransform(tf::StampedTransform odom);
+  ///Transform to base, e.g., from Joint/Wheel odometry
+  void setOdom2BaseTransform(tf::StampedTransform odom);
   ///Transform, e.g., from MoCap
   void setGroundTruthTransform(tf::StampedTransform gt);
   ///Transform, e.g., from kinematics
   void setBase2PointsTransform(tf::StampedTransform& b2p);
   ///Transform, e.g., from Joint/Wheel odometry
   tf::StampedTransform getOdomTransform() const;
+  tf::StampedTransform getOdom2BaseTransform() const;
   ///Transform, e.g., from MoCap
   tf::StampedTransform getGroundTruthTransform() const;
   ///Transform, e.g., from kinematics
@@ -204,6 +207,7 @@ protected:
   tf::StampedTransform base2points_; //!<contains the transformation from the base (defined on param server) to the point_cloud
   tf::StampedTransform ground_truth_transform_;//!<contains the transformation from the mocap system
   tf::StampedTransform odom_transform_;        //!<contains the transformation from the wheel encoders/joint states
+  tf::StampedTransform odom2base_transform_;        //!<contains the transformation from the wheel encoders/joint states
   int initial_node_matches_;
   sensor_msgs::CameraInfo cam_info_; 
   //void computeKeypointDepthStats(const cv::Mat& depth_img, const std::vector<cv::KeyPoint> keypoints);

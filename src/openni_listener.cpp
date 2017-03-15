@@ -957,13 +957,13 @@ void OpenNIListener::retrieveTransformations(std_msgs::Header depth_header, Node
   tf::StampedTransform base2points;
 
   try{
-    tflistener_->waitForTransform(base_frame, depth_frame_id, depth_time, ros::Duration(0.005));
+    tflistener_->waitForTransform(base_frame, depth_frame_id, depth_time, ros::Duration(0.1)); // 0.005
     tflistener_->lookupTransform(base_frame, depth_frame_id, depth_time, base2points);
     base2points.stamp_ = depth_time;
   }
   catch (tf::TransformException ex){
-    ROS_WARN("%s",ex.what());
-    ROS_WARN("Using Standard kinect /openni_camera -> /openni_rgb_optical_frame as transformation (This message is throttled to 1 per 5 seconds)");
+    ROS_ERROR("%s",ex.what());
+    ROS_ERROR("Using Standard kinect /openni_camera -> /openni_rgb_optical_frame as transformation (This message is throttled to 1 per 5 seconds)");
     //emulate the transformation from kinect openni_camera frame to openni_rgb_optical_frame
     base2points.setRotation(tf::createQuaternionFromRPY(-1.57,0,-1.57));
     base2points.setOrigin(tf::Point(0,-0.04,0));
@@ -971,6 +971,7 @@ void OpenNIListener::retrieveTransformations(std_msgs::Header depth_header, Node
     base2points.frame_id_ = base_frame;
     base2points.child_frame_id_ = depth_frame_id;
   }
+
   node_ptr->setBase2PointsTransform(base2points);
 
   if(!gt_frame.empty()){ 
@@ -995,20 +996,25 @@ void OpenNIListener::retrieveTransformations(std_msgs::Header depth_header, Node
     node_ptr->setGroundTruthTransform(ground_truth_transform);
   }
   if(!odom_frame.empty()){ 
+
     //Retrieve the ground truth data. For the first frame it will be
     //set as origin. the rest will be used to compare
     tf::StampedTransform current_odom_transform;
+    tf::StampedTransform current_odom2base_transform;
     try{
-      tflistener_->waitForTransform(depth_frame_id, odom_frame, depth_time, ros::Duration(0.005));
+      tflistener_->waitForTransform(depth_frame_id, odom_frame, depth_time, ros::Duration(0.1));
       tflistener_->lookupTransform( depth_frame_id, odom_frame, depth_time, current_odom_transform);
+      tflistener_->lookupTransform( base_frame, odom_frame, depth_time, current_odom2base_transform);
     }
     catch (tf::TransformException ex){
-      ROS_WARN_THROTTLE(5, "%s - No odometry available (This message is throttled to 1 per 5 seconds)",ex.what());
+      ROS_ERROR("%s - No odometry available",ex.what());
       current_odom_transform = tf::StampedTransform(tf::Transform::getIdentity(), depth_time, "missing_odometry", depth_frame_id);
       current_odom_transform.stamp_ = depth_time;
     }
-    printTransform("Odometry", current_odom_transform);
+    //errPrintTransform("Odometry", current_odom_transform);
+
     node_ptr->setOdomTransform(current_odom_transform);
+    node_ptr->setOdom2BaseTransform(current_odom2base_transform);
   }
   // End: Fill in Transformation -----------------------------------------------------------------------
 }

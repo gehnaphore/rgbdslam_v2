@@ -330,7 +330,8 @@ protected:
     mutable tf::TransformBroadcaster br_;
     tf::Transform computed_motion_; ///<transformation of the last frame to the first frame (assuming the first one is fixed)
     tf::Transform  init_base_pose_;
-    tf::StampedTransform latest_transform_cache_;//base_frame -> optical_frame 
+    tf::Transform  init_base2Points_;
+    tf::StampedTransform latest_transform_cache_;//base_frame -> optical_frame
 
     //!Map from node id to node. Assumption is, that ids start at 0 and are consecutive
     typedef std::pair<int, Node*> GraphNodeType;
