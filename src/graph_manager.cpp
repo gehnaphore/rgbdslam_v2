@@ -456,6 +456,10 @@ bool GraphManager::nodeComparisons(Node* new_node,
     int prev_best = mr.edge.id1;
     curr_best_result_ = mr;
 
+    tf::StampedTransform oldOdomTF = graph_[sequentially_previous_id]->getOdomTransform();
+    tf::StampedTransform newOdomTF = new_node->getOdomTransform();
+    tf::Transform odomTFFromPreviousFrame = oldOdomTF * newOdomTF.inverse();
+
     //Initial Comparison ######################################################################
     bool predecessor_matched = false;
     if(ps->get<double>("min_translation_meter") > 0.0 ||
@@ -481,7 +485,8 @@ bool GraphManager::nodeComparisons(Node* new_node,
             tf::Transform combined = previous*incremental;
             latest_transform_cache_ = stampedTransformInWorldFrame(new_node, combined);
             //errPrintTransform("Computed new transform", latest_transform_cache_);
-            broadcastTransform(latest_transform_cache_);
+            // This makes him wiggle!
+            //broadcastTransform(latest_transform_cache_);
             process_node_runs_ = false;
             curr_best_result_ = mr;
             return false;
@@ -636,6 +641,7 @@ bool GraphManager::nodeComparisons(Node* new_node,
 
     //If no trafo is found, only keep if a parameter says so or odometry is available. 
     //Otherwise only add a constant position edge, if the predecessor wasn't matched and its timestamp is nearby
+/*
     if((!found_trafo && valid_odometry) || 
        ((!found_trafo && keep_anyway) || 
         (!predecessor_matched && time_delta_sec < 0.1))) //FIXME: Add parameter for constant position assumption and time_delta
@@ -644,10 +650,10 @@ bool GraphManager::nodeComparisons(Node* new_node,
 
       odom_edge.id1 = sequentially_previous_id;
       odom_edge.id2 = new_node->id_;
-      odom_edge.transform.setIdentity();
+      odom_edge.transform = tf2G2O(odomTFFromPreviousFrame);
       curr_motion_estimate = eigenTF2QMatrix(odom_edge.transform);
       odom_edge.informationMatrix = Eigen::Matrix<double,6,6>::Zero(); 
-      ROS_WARN("No valid (sequential) transformation between %d and %d: Using constant position assumption.", odom_edge.id1, odom_edge.id2);
+      ROS_WARN("No valid (sequential) transformation between %d and %d: Assuming odometry is correct... good luck!", odom_edge.id1, odom_edge.id2);
       odom_edge.informationMatrix = Eigen::Matrix<double,6,6>::Identity() / time_delta_sec;//e-9; 
       addEdgeToG2O(odom_edge,graph_[sequentially_previous_id],new_node, true,true, curr_motion_estimate);
       graph_[new_node->id_] = new_node; //Needs to be added
@@ -656,7 +662,7 @@ bool GraphManager::nodeComparisons(Node* new_node,
       mr.edge = odom_edge;
       curr_best_result_ = mr;
     }
-
+*/
     return cam_cam_edges_.size() > num_edges_before;
 }
 

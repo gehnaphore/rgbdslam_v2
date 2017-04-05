@@ -54,6 +54,7 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/impl/voxel_grid.hpp>
 #include <opencv/highgui.h>
+#include <opencv2/core/ocl.hpp>
 #ifdef USE_PCL_ICP
 #include "icp.h"
 #endif
@@ -157,6 +158,7 @@ Node::Node(const cv::Mat& visual,
     ScopedTimer s("Feature Detection");
     ROS_FATAL_COND(detector.empty(), "No valid detector!");
 
+    ROS_WARN("cv::ocl::haveOpenCL() = %d",(int)cv::ocl::haveOpenCL());
     detector->detect( gray_img, feature_locations_2d_, detection_mask);// fill 2d locations
   }
 

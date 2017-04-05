@@ -23,12 +23,13 @@ ScopedTimer::~ScopedTimer(){
   //No output anyway if above INFO level - ergo do nothing
 #if (ROSCONSOLE_MIN_SEVERITY < ROSCONSOLE_SEVERITY_WARN)
   double min_time = ParameterServer::instance()->get<double>("min_time_reported");
+  double runtime = elapsed();
   if(unconditional_triggering || min_time > 0){
-    double runtime = elapsed();
     if(unconditional_triggering || runtime > min_time){
       ROS_INFO_STREAM_NAMED("timings", name << " runtime: "<< runtime <<" s");
     }
   }
+  ROS_INFO("%s runtime: %lf",name,runtime);
 #endif
 }
 
