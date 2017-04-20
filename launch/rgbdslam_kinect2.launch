@@ -45,10 +45,10 @@
 		<param name="config/siftgpu_with_cuda"			    value="false"/>
 
 		<param name="config/optimizer_skip_step"			value="1"/><!-- optimize only every n-th frame -->
-		<param name="config/cloud_creation_skip_step"		value="1"/><!-- subsample the images' pixels (in both, width and height), when creating the cloud (and therefore reduce memory consumption) -->
+		<param name="config/cloud_creation_skip_step"		value="3"/><!-- subsample the images' pixels (in both, width and height), when creating the cloud (and therefore reduce memory consumption) -->
 		<param name="config/create_cloud_every_nth_node"	value="1"/>
-		<param name="config/store_pointclouds"	            value="true"/>
-		<param name="config/send_clouds_rate"	            value="1"/>
+		<param name="config/store_pointclouds"	            value="false"/>
+		<param name="config/send_clouds_rate"	            value="2"/>
 		<param name="config/odometry_information_factor"	value="10000"/>
 
 

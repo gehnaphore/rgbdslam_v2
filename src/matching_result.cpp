@@ -1,6 +1,6 @@
 #include "matching_result.h"
 #include "sstream"
-const char* MatchingResult::toString(){
+std::string MatchingResult::toString(){
   std::stringstream ss;
   ss << "edge id1: " << edge.id1 << "; ";
   ss << "edge id2: " << edge.id2 << "; ";
@@ -11,6 +11,6 @@ const char* MatchingResult::toString(){
   if(all_points != 0) ss << "all_points: " << all_points << "; ";
   if(inlier_matches.size() != 0) ss << "inlier matches size: " << inlier_matches.size() << "; ";
   if(all_matches.size() != 0) ss << "all matches size: " << all_matches.size() << "; ";
-  return ss.str().c_str();
+  return ss.str();
 }
 

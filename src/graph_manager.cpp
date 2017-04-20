@@ -558,7 +558,7 @@ bool GraphManager::nodeComparisons(Node* new_node,
         for (int i = 0; i < results.size(); i++) 
         {
             MatchingResult& mr = results[i];
-            ROS_INFO("Result of comparison %d: %s", i, mr.toString());
+            ROS_INFO("Result of comparison %d: %s", i, mr.toString().c_str());
             if (mr.edge.id1 >= 0 ) {
               //ROS_INFO("new node has id %i", new_node->id_);
               assert(graph_[mr.edge.id1]);
@@ -594,7 +594,7 @@ bool GraphManager::nodeComparisons(Node* new_node,
             Node* node_to_compare = graph_[vertices_to_comp[id_of_id]];
             ROS_INFO("Comparing new node (%i) with node %i / %i", new_node->id_, vertices_to_comp[id_of_id], node_to_compare->id_);
             MatchingResult mr = new_node->matchNodePair(node_to_compare);
-            ROS_INFO("Result of comparison: %s", mr.toString());
+            ROS_INFO("Result of comparison: %s", mr.toString().c_str());
 
             if (mr.edge.id1 >= 0) {
               ros::Duration delta_time = new_node->header_.stamp - graph_[mr.edge.id1]->header_.stamp;
@@ -734,10 +734,12 @@ bool GraphManager::addNode(Node* new_node)
       //Juergen: bad hack, should instead prevent the creation of the cloud, but this is faster implementation wise
       ROS_INFO_STREAM("create cloud " << new_node->id_ << " " << ps->get<int>("create_cloud_every_nth_node") << " " << new_node->id_%ps->get<int>("create_cloud_every_nth_node")) ;
       if((new_node->id_%ps->get<int>("create_cloud_every_nth_node"))!=0){
+        ROS_INFO("clearing point cloud");
         new_node->clearPointCloud();
       }
 
       if(!edge_to_last_keyframe_found && earliest_loop_closure_node_ > keyframe_ids_.back()) {
+        ROS_INFO("adding keyframe");
         this->addKeyframe(new_node->id_-1);//use the id of the node before, because that one is still localized w.r.t. a keyframe. So keyframes are connected
       } else {
         if(ps->get<bool>("visualize_keyframes_only")){
@@ -750,8 +752,12 @@ bool GraphManager::addNode(Node* new_node)
         features_to_visualize = new std_vector_of_eigen_vector4f();
       }
 
+      ROS_INFO("emitting point cloud");
       Q_EMIT setPointCloud(cloud_to_visualize, motion_estimate);
+
+      ROS_INFO("emitting features");
       Q_EMIT setFeatures(features_to_visualize);
+
       ROS_INFO("Added Node, new graphsize: %i nodes", (int) graph_.size());
       if(ps->get<int>("optimizer_skip_step") > 0 && 
           (camera_vertices.size() % ps->get<int>("optimizer_skip_step")) == 0)
