@@ -11,7 +11,7 @@
 		<param name="config/topic_points"					value=""/>
 
 		<param name="config/drop_async_frames"			    value="true"/>
-		<param name="config/use_gui"			            value="true"/>
+		<param name="config/use_gui"			            value="false"/>
 
 <!--
 		<param name="config/feature_extractor_type"			value="ORB"/>
